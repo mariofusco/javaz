@@ -83,6 +83,11 @@ public abstract class Validation<L, A> {
         public boolean isSuccess() {
             return true;
         }
+
+        @Override
+        public String toString() {
+            return "Success( " + value + " )";
+        }
     }
 
     public static final class Failure<L, A> extends Validation<L, A> {
