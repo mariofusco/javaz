@@ -28,7 +28,7 @@ public class CompositionTest {
 
     @Test
     public void test() {
-        BiFunction<Cat, Bird, FullCat> story = ((BiFunction<Cat, Bird, CatWithCatch>)Cat::capture).compose(CatWithCatch::eat);
+        BiFunction<Cat, Bird, FullCat> story = ((BiFunction<Cat, Bird, CatWithCatch>)Cat::capture).andThen(CatWithCatch::eat);
         FullCat fullCat = story.apply(new Cat(), new Bird());
     }
 

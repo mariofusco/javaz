@@ -21,8 +21,8 @@ public class Validator<V> {
 
     public static <V> Validation<List<Object>, V> validate(V value, Validator<V>... validators) {
         return asList(validators).stream()
-                .fold( () -> successList(value),
+                .reduce( successList(value),
                         (Validation<List<Object>, V> validating, Validator<V> validator) -> validating.flatMap(validator::validate),
-                        null );
+                        (Validation<List<Object>, V> v1, Validation<List<Object>, V> v2) -> null );
     }
 }
