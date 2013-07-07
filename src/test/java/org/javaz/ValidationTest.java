@@ -7,6 +7,8 @@ import java.util.function.*;
 
 import static java.util.Arrays.asList;
 import static org.javaz.Validation.*;
+import static org.javaz.ValidationDSL.valid;
+import static org.javaz.Validator.using;
 import static org.javaz.Validator.validate;
 import static org.junit.Assert.assertTrue;
 
@@ -15,7 +17,31 @@ public class ValidationTest {
     @Test
     public void testValidation() {
         Person person = new Person("mario", 137);
-        Validation<List<Object>, Person> validatedPerson = successList(person).flatMap(ValidationTest::validAge).flatMap(ValidationTest::validName);
+        Validation<List<Object>, Person> validatedPerson = successList(person)
+                                                                .flatMap(ValidationTest::validAge)
+                                                                .flatMap(ValidationTest::validName);
+        System.out.println(validatedPerson);
+    }
+
+    @Test
+    public void testValidationDSLLambda() {
+        Person person = new Person("mario", 137);
+        Validation<? extends List<Object>, Person> validatedPerson = valid(person,
+                                                                           p -> p.getAge() < 130 ?
+                                                                                success(p) :
+                                                                                failure(p, "Age must be less than 130"),
+                                                                           p -> Character.isUpperCase(p.getName().charAt(0)) ?
+                                                                                success(p) :
+                                                                                failure(p, "Name must start with an uppercase"));
+        System.out.println(validatedPerson);
+    }
+
+    @Test
+    public void testValidationDSL() {
+        Person person = new Person("mario", 137);
+        Validation<? extends List<Object>, Person> validatedPerson = valid(person,
+                                                                           ValidationTest::validAge,
+                                                                           ValidationTest::validName);
         System.out.println(validatedPerson);
     }
 
@@ -29,6 +55,17 @@ public class ValidationTest {
     }
 
     @Test
+    public void testValidatorDSL() {
+        Person person = new Person("mario", 137);
+        Validation<List<Object>, Person> validatedPerson = validate(person,
+                                                                    using((Person p) -> p.getAge() < 130)
+                                                                            .withError("Age must be less than 130"),
+                                                                    using((Person p) -> Character.isUpperCase(p.getName().charAt(0)))
+                                                                            .withError("Name must start with an uppercase"));
+        System.out.println(validatedPerson);
+    }
+
+    @Test
     public void testValidatorLambda() {
         Person person = new Person("mario", 137);
         Validation<List<Object>, Person> validatedPerson = validate(person,
@@ -37,7 +74,7 @@ public class ValidationTest {
         System.out.println(validatedPerson);
     }
 
-    public static Validation<?, Person> validAge(Person p) {
+    public static Validation<String, Person> validAge(Person p) {
         return isValidAge(p) ? success(p) : failure(p, "Age must be less than 130");
     }
 
@@ -45,7 +82,7 @@ public class ValidationTest {
         return p.getAge() < 130;
     }
 
-    public static Validation<?, Person> validName(Person p) {
+    public static Validation<String, Person> validName(Person p) {
         return isValidName(p) ? success(p) :  failure(p, "Name must start with an uppercase");
     }
 

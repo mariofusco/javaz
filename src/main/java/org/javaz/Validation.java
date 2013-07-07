@@ -17,7 +17,9 @@ public abstract class Validation<L, A> {
 
     public abstract boolean isSuccess();
 
-    public A getValue() {
+    public abstract L failure();
+
+    public A value() {
         return value;
     }
 
@@ -55,6 +57,11 @@ public abstract class Validation<L, A> {
         }
 
         @Override
+        public L failure() {
+            return null;
+        }
+
+        @Override
         public String toString() {
             return "Success( " + value + " )";
         }
@@ -77,6 +84,11 @@ public abstract class Validation<L, A> {
             return (Validation<List<L>, B>)(result.isSuccess() ?
                     successList(result.value) :
                     new FailureList<L, B>(result.value, ((Failure<L, B>)result).left));
+        }
+
+        @Override
+        public List<L> failure() {
+            return null;
         }
     }
 
@@ -105,6 +117,11 @@ public abstract class Validation<L, A> {
         @Override
         public boolean isSuccess() {
             return false;
+        }
+
+        @Override
+        public L failure() {
+            return left;
         }
 
         @Override
