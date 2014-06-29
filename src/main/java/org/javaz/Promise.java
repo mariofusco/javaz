@@ -27,7 +27,7 @@ public class Promise<A> implements Future<A> {
     }
 
     public <B> Promise<B> flatMap(Function<? super A, Promise<B>> f) {
-        return new Promise<B>(future.thenCompose(a -> f.apply(a).future));
+        return new Promise<B>(future.thenComposeAsync(a -> f.apply(a).future));
     }
 
     // Delegated methods

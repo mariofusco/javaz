@@ -16,23 +16,25 @@ public class ValidationTest {
 
     @Test
     public void testValidation() {
-        Person person = new Person("mario", 137);
-        Validation<List<Object>, Person> validatedPerson = successList(person)
-                                                                .flatMap(ValidationTest::validAge)
-                                                                .flatMap(ValidationTest::validName);
+        Person person = new Person("Mario", 40);
+        Validation<List<Object>, Person> validatedPerson =
+                success(person).failList()
+                        .flatMap(ValidationTest::validAge)
+                        .flatMap(ValidationTest::validName);
+
         System.out.println(validatedPerson);
     }
 
     @Test
     public void testValidationDSLLambda() {
-        Person person = new Person("mario", 137);
+        Person person = new Person("mario", 140);
         Validation<? extends List<Object>, Person> validatedPerson = valid(person,
                                                                            p -> p.getAge() < 130 ?
                                                                                 success(p) :
-                                                                                failure(p, "Age must be less than 130"),
+                                                                                failure("Age must be less than 130", p),
                                                                            p -> Character.isUpperCase(p.getName().charAt(0)) ?
                                                                                 success(p) :
-                                                                                failure(p, "Name must start with an uppercase"));
+                                                                                failure("Name must start with an uppercase", p));
         System.out.println(validatedPerson);
     }
 
@@ -75,7 +77,7 @@ public class ValidationTest {
     }
 
     public static Validation<String, Person> validAge(Person p) {
-        return isValidAge(p) ? success(p) : failure(p, "Age must be less than 130");
+        return isValidAge(p) ? success(p) : failure("Age must be less than 130", p);
     }
 
     public static boolean isValidAge(Person p) {
@@ -83,7 +85,7 @@ public class ValidationTest {
     }
 
     public static Validation<String, Person> validName(Person p) {
-        return isValidName(p) ? success(p) :  failure(p, "Name must start with an uppercase");
+        return isValidName(p) ? success(p) :  failure("Name must start with an uppercase", p);
     }
 
     public static boolean isValidName(Person p) {

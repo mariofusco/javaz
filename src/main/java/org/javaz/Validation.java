@@ -27,12 +27,8 @@ public abstract class Validation<L, A> {
         return new Success<L, A>(value);
     }
 
-    public static <L, A> SuccessList<L, A> successList(A value) {
-        return new SuccessList<L, A>(value);
-    }
-
-    public static <L, A> Failure<L, A> failure(A value, L left) {
-        return new Failure(value, left);
+    public static <L, A> Failure<L, A> failure(L left, A value) {
+        return new Failure(left, value);
     }
 
     public static class Success<L, A> extends Validation<L, A> {
@@ -65,6 +61,10 @@ public abstract class Validation<L, A> {
         public String toString() {
             return "Success( " + value + " )";
         }
+
+        public Success<List<L>, A> failList() {
+            return new SuccessList<L, A>(value);
+        }
     }
 
     public static final class SuccessList<L, A> extends Success<List<L>, A> {
@@ -75,15 +75,15 @@ public abstract class Validation<L, A> {
 
         @Override
         public <B> Validation<List<L>, B> map(Function<? super A, ? extends B> mapper) {
-            return successList(mapper.apply(value));
+            return new SuccessList(mapper.apply(value));
         }
 
         @Override
         public <B> Validation<List<L>, B> flatMap(Function<? super A, Validation<?, ? extends B>> mapper) {
             Validation<?, ? extends B> result = mapper.apply(value);
             return (Validation<List<L>, B>)(result.isSuccess() ?
-                    successList(result.value) :
-                    new FailureList<L, B>(result.value, ((Failure<L, B>)result).left));
+                    new SuccessList(result.value) :
+                    new FailureList<L, B>(((Failure<L, B>)result).left, result.value));
         }
 
         @Override
@@ -96,22 +96,22 @@ public abstract class Validation<L, A> {
 
         protected final L left;
 
-        public Failure(A value, L left) {
+        public Failure(L left, A value) {
             super(value);
             this.left = left;
         }
 
         @Override
         public <B> Validation<L, B> map(Function<? super A, ? extends B> mapper) {
-            return new Failure(mapper.apply(value), left);
+            return failure(left, mapper.apply(value));
         }
 
         @Override
         public <B> Validation<L, B> flatMap(Function<? super A, Validation<?, ? extends B>> mapper) {
             Validation<?, ? extends B> result = mapper.apply(value);
             return result.isSuccess() ?
-                    new Failure<L, B>(result.value, left) :
-                    new Failure<L, B>(result.value,  ((Failure<L, B>)result).left);
+                    failure(left, result.value) :
+                    failure(((Failure<L, B>)result).left, result.value);
         }
 
         @Override
@@ -132,29 +132,29 @@ public abstract class Validation<L, A> {
 
     public static final class FailureList<L, A> extends Failure<List<L>, A> {
 
-        public FailureList(A value, L left) {
-            super(value, new ArrayList<L>() {{
+        public FailureList(L left, A value) {
+            super(new ArrayList<L>() {{
                 add(left);
-            }});
+            }}, value);
         }
 
-        private FailureList(A value, List<L> left) {
-            super(value, left);
+        private FailureList(List<L> left, A value) {
+            super(left, value);
         }
 
         @Override
         public <B> Validation<List<L>, B> map(Function<? super A, ? extends B> mapper) {
-            return new FailureList(mapper.apply(value), left);
+            return new FailureList(left, mapper.apply(value));
         }
 
         @Override
         public <B> Validation<List<L>, B> flatMap(Function<? super A, Validation<?, ? extends B>> mapper) {
             Validation<?, ? extends B> result = mapper.apply(value);
             return (Validation<List<L>, B>)(result.isSuccess() ?
-                    new FailureList(result.value, left) :
-                    new FailureList<L, B>(result.value, new ArrayList<L>(left) {{
+                    new FailureList(left, result.value) :
+                    new FailureList<L, B>(new ArrayList<L>(left) {{
                         add(((Failure<L, B>)result).left);
-                    }}));
+                    }}, result.value));
         }
     }
 }

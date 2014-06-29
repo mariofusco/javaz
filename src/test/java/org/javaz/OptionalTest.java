@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
+import static java.util.Optional.*;
 import static org.junit.Assert.assertEquals;
 
 public class OptionalTest {
+
     @Test
     public void testMap() {
         Map<String, String> param = new HashMap<String, String>();
@@ -25,18 +25,16 @@ public class OptionalTest {
     }
 
     public int readPositiveIntParam(Map<String, String> params, String name) {
-        return option(params.get(name)).flatMap(OptionalTest::stringToInt).filter(i -> i > 0).orElse(0);
+        return ofNullable(params.get(name))
+                .flatMap(OptionalTest::s2i)
+                .filter(i -> i > 0).orElse(0);
     }
 
-    public static Optional<Integer> stringToInt(String s) {
+    public static Optional<Integer> s2i(String s) {
         try {
             return of(Integer.parseInt(s));
-        } catch (NumberFormatException nfe) {
+        } catch (NumberFormatException e) {
             return empty();
         }
-    }
-
-    public static <A> Optional<A> option(A value) {
-        return value == null ? empty() : of(value);
     }
 }

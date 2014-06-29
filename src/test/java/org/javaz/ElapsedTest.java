@@ -3,13 +3,20 @@ package org.javaz;
 public class ElapsedTest {
 
     public static void main(String[] args) {
-        StreamsTest test = new StreamsTest();
-        for (int i = 0; i < 20; i++) {
+        long best = Long.MAX_VALUE;
+        for (int i = 0; i < 10; i++) {
             long start = System.nanoTime();
-            //test.testPrimeNumbersPartition();
-            test.testMemoizedPrimeNumbersPartition();
-            long end = System.nanoTime();
-            System.out.println("Done in " + ((end - start) / 1000 / 1000) + " msecs");
+
+            //new ParallelStreamsTest().testSum();
+            //new ParallelStreamsTest().testParallelSum();
+
+            //new StreamsTest().testPrimeNumbersPartition();
+            new StreamsTest().testMemoizedPrimeNumbersPartition();
+
+            long elapsed = (System.nanoTime() - start) / 1_000_000;
+            System.out.println("Done in " + elapsed + " msecs");
+            if (elapsed < best) best = elapsed;
         }
+        System.out.println("Best execution done in " + best + " msecs");
     }
 }

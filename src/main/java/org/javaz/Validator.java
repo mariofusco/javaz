@@ -16,12 +16,12 @@ public class Validator<V> {
     }
 
     public Validation<Object, V> validate(V value) {
-        return predicate.test(value) ? success(value) : failure(value, fail);
+        return predicate.test(value) ? success(value) : failure(fail, value);
     }
 
     public static <V> Validation<List<Object>, V> validate(V value, Validator<V>... validators) {
         return asList(validators).stream()
-                .reduce( successList(value),
+                .reduce( success(value).failList(),
                         (Validation<List<Object>, V> validating, Validator<V> validator) -> validating.flatMap(validator::validate),
                         (Validation<List<Object>, V> v1, Validation<List<Object>, V> v2) -> null );
     }

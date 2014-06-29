@@ -7,21 +7,21 @@ import static org.junit.Assert.assertEquals;
 
 public class PromiseTest {
 
-    public int slowLength(String s) {
+    private void someLongComputation() {
         try {
             Thread.sleep(1000L);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public int slowLength(String s) {
+        someLongComputation();
         return s.length();
     }
 
     public int slowDouble(int i) {
-        try {
-            Thread.sleep(1000L);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        someLongComputation();
         return i*2;
     }
 
@@ -30,10 +30,14 @@ public class PromiseTest {
         long start = System.currentTimeMillis();
 
         String s = "Hello";
-        Promise<Integer> p = promise(() -> slowLength(s)).flatMap(i -> promise(() -> slowDouble(i)));
+        Promise<Integer> p =
+                promise(() -> slowLength(s))
+                .flatMap(i -> promise(() -> slowDouble(i)));
 
-        System.out.println("promised in " + (System.currentTimeMillis() - start) + " msecs");
-        assertEquals(10, (int) p.get());
-        System.out.println("result found in " + (System.currentTimeMillis() - start) + " msecs");
+        System.out.println("Promised in " + (System.currentTimeMillis() - start) + " msecs");
+
+        int result = p.get();
+        System.out.println("Result= " + result + "; found in " + (System.currentTimeMillis() - start) + " msecs");
+        assertEquals(10, result);
     }
 }
